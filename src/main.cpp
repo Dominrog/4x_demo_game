@@ -59,12 +59,6 @@ int main()
 
     initBlockRegistry();
 
-    Planet planet(0.0f, 0.0f, 0.0f, 32, 0.025f, 0.0f, 5.5f);
-    planet.fillPlanet();
-    planet.checkNeighbors();
-    planet.buildMesh(cubeVertices, cubeIndices);
-    planet.upload();
-
     camera.UpdatePosition();
 
 
@@ -92,7 +86,6 @@ int main()
 
     	camera.UpdatePosition();
 
-    	planet.render(objectShader);
 
 
     	glfwSwapBuffers(window);

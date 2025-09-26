@@ -31,11 +31,11 @@ void Planet::fillPlanet()
     blocks.resize(PLANET_SIZE * PLANET_SIZE * PLANET_SIZE, static_cast<uint8_t>(BlockType::Empty));
 
     FastNoiseLite noise;
-    noise.SetSeed(1337223);           // Zufälliger Seed pro Planet
+    noise.SetSeed(1337223);
     noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
-    noise.SetFrequency(0.005f);      // Grobheit der Oberfläche
+    noise.SetFrequency(0.005f);
 
-    float amplitude = 1.0f;        // Max. Abweichung vom Radius
+    float amplitude = 1.0f; 
     float waterLevel = radius * 1.0f;
     float iceThreshold = 0.85f;
 
@@ -47,13 +47,11 @@ void Planet::fillPlanet()
                 float relativeY = float(y) / radius;
                 bool isIce = (relativeY > iceThreshold || relativeY < -iceThreshold);
 
-                // Normierte Koordinaten für Noise
                 float scale = 200.0f;
                 float nx = float(x) / radius * scale;
                 float ny = float(y) / radius * scale;
                 float nz = float(z) / radius * scale;
 
-                // Noise nur für die Oberfläche anwenden
                 float noiseValue = noise.GetNoise(nx, ny, nz) * amplitude;
 
                 float localRadius = radius + noiseValue;
@@ -62,7 +60,6 @@ void Planet::fillPlanet()
                     localRadius = waterLevel;
                 }
 
-                // Nur Punkte innerhalb der kugel setzen
                 if (distance <= localRadius) {
                     int wx = x + center.x;
                     int wy = y + center.y;
@@ -104,7 +101,7 @@ void Planet::checkNeighbors() {
             for (int z = 0; z < PLANET_SIZE; z++) {
 
                 uint8_t id = blocks[idx(x, y, z)];
-                if(id == static_cast<uint8_t>(BlockType::Empty)) continue; // Air überspringen
+                if(id == static_cast<uint8_t>(BlockType::Empty)) continue;
 
                 auto getBlock = [&](int nx, int ny, int nz) -> uint8_t {
                     if(nx < 0 || nx >= PLANET_SIZE || ny < 0 || ny >= PLANET_SIZE || nz < 0 || nz >= PLANET_SIZE)
@@ -176,12 +173,11 @@ void Planet::buildMesh(const float* cubeVertices, const unsigned int* cubeIndice
                 mesh.vertices.push_back({pos + blockPos, shade, blockColor});
             }
 
-            // 6 Indices pro Face
             int idxOffset = static_cast<int>(side) * 6;
             for (int i = 0; i < 6; ++i)
                 mesh.indices.push_back(vertexOffset + cubeIndices[idxOffset + i]);
 
-            vertexOffset += 4; // 4 Vertices pro Face erhöhen
+            vertexOffset += 4;
         }
     }
 }
@@ -312,7 +308,7 @@ glm::vec3 Planet::getPosition() const {
 }
 
 float Planet::getRadius() const {
-    return static_cast<float>(radius); // Radius des Planeten für Ray-Sphere-Test
+    return static_cast<float>(radius);
 }
 
 int Planet::getSize() const 
@@ -322,21 +318,18 @@ int Planet::getSize() const
 
 
 glm::vec3 Planet::getCenter() const {
-    // Orbit um den Stern berechnen
     float x = cos(orbitAngle) * orbitRadius;
     float z = sin(orbitAngle) * orbitRadius;
-    float y = positionY; // Höhe oder Inclination berücksichtigen, wenn nötig
+    float y = positionY;
 
-    // Mittelpunkt des Planeten
     return glm::vec3(x, y, -z);
 }
 
 glm::vec3 Planet::getWorldPosition() const {
-    glm::vec3 pos(orbitRadius, 0.0f, 0.0f); // Start auf X-Achse
+    glm::vec3 pos(orbitRadius, 0.0f, 0.0f);
     glm::mat4 rot = glm::rotate(glm::mat4(1.0f), orbitAngle, glm::vec3(0, 1, 0));
     pos = glm::vec3(rot * glm::vec4(pos, 1.0f));
 
-    // Neigung
     rot = glm::rotate(glm::mat4(1.0f), orbitInclination, glm::vec3(0, 0, 1));
     pos = glm::vec3(rot * glm::vec4(pos, 1.0f));
 
@@ -344,7 +337,7 @@ glm::vec3 Planet::getWorldPosition() const {
 }
 
 glm::vec3 Planet::getAABBMin() const {
-    glm::vec3 minBlock(1e9f); // sehr groß
+    glm::vec3 minBlock(1e9f);
     for(const auto& block : visibleBlocks) {
         glm::vec3 blockPos(block.x, block.y, block.z);
         if(blockPos.x < minBlock.x) minBlock.x = blockPos.x;
@@ -352,7 +345,6 @@ glm::vec3 Planet::getAABBMin() const {
         if(blockPos.z < minBlock.z) minBlock.z = blockPos.z;
     }
 
-    // Transformiere die Box in Weltkoordinaten (Orbit + Neigung)
     glm::mat4 transform = glm::rotate(glm::mat4(1.0f), orbitAngle, glm::vec3(0,1,0));
     transform = glm::translate(transform, glm::vec3(orbitRadius, 0, 0));
     transform = glm::rotate(transform, orbitInclination, glm::vec3(0,0,1));
@@ -361,7 +353,7 @@ glm::vec3 Planet::getAABBMin() const {
 }
 
 glm::vec3 Planet::getAABBMax() const {
-    glm::vec3 maxBlock(-1e9f); // sehr klein
+    glm::vec3 maxBlock(-1e9f);
     for(const auto& block : visibleBlocks) {
         glm::vec3 blockPos(block.x, block.y, block.z);
         if(blockPos.x > maxBlock.x) maxBlock.x = blockPos.x;
@@ -369,7 +361,6 @@ glm::vec3 Planet::getAABBMax() const {
         if(blockPos.z > maxBlock.z) maxBlock.z = blockPos.z;
     }
 
-    // Transformiere die Box in Weltkoordinaten (Orbit + Neigung)
     glm::mat4 transform = glm::rotate(glm::mat4(1.0f), orbitAngle, glm::vec3(0,1,0));
     transform = glm::translate(transform, glm::vec3(orbitRadius, 0, 0));
     transform = glm::rotate(transform, orbitInclination, glm::vec3(0,0,1));

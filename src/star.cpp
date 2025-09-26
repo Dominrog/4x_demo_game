@@ -78,12 +78,12 @@ std::vector<glm::vec3> Star::generateOrbitCircle(float radius, int segments)
     std::vector<glm::vec3> vertices;
     float angleStep = 2.0f * glm::pi<float>() / segments;
 
-    for (int i = 0; i <= segments; ++i)  // <= damit der Kreis geschlossen wird
+    for (int i = 0; i <= segments; ++i)
     {
         float angle = i * angleStep;
         float x = radius * cos(angle);
         float z = radius * sin(angle);
-        vertices.push_back(glm::vec3(x, 0.0f, z)); // Y=0, Kreis in XZ-Ebene
+        vertices.push_back(glm::vec3(x, 0.0f, z));
     }
 
     return vertices;
