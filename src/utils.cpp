@@ -7,16 +7,13 @@ bool cameraLockedOnObject = false;
 double mouseX, mouseY;
 Planet* hoveredPlanet = nullptr;
 
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window, Camera camera)
+void processInput(GLFWwindow *window, Camera& camera, float deltaTime)
 {
     static bool leftMousePressedLastFrame = false;
 
@@ -78,4 +75,12 @@ void processInput(GLFWwindow *window, Camera camera)
     }
 
     leftMousePressedLastFrame = leftPressed;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    Camera* camera = static_cast<Camera*>(glfwGetWindowUserPointer(window));
+
+    if (camera)
+        camera->ProcessMouseScroll((float)yoffset);
 }

@@ -11,10 +11,11 @@
 #include "camera.h"
 #include "planet.h"
 #include "star.h"
+#include "settings.h"
 
-// settings
-const unsigned int SCR_WIDTH = 1920;
-const unsigned int SCR_HEIGHT = 1080;
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 Camera camera(glm::vec3(0.0f), 400.0f, 0.0f, -17.0f);
 
@@ -37,6 +38,8 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, nullptr);
+    glfwSetWindowUserPointer(window, &camera);
+	glfwSetScrollCallback(window, scroll_callback);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -52,16 +55,51 @@ int main()
     glfwSwapInterval(0);
 
 
+    Shader objectShader("../shaders/objectShader.vs", "../shaders/objectShader.fs");
+
+    initBlockRegistry();
+
+    Planet planet(0.0f, 0.0f, 0.0f, 32, 0.025f, 0.0f, 5.5f);
+    planet.fillPlanet();
+    planet.checkNeighbors();
+    planet.buildMesh(cubeVertices, cubeIndices);
+    planet.upload();
+
+    camera.UpdatePosition();
+
+
     while (!glfwWindowShouldClose(window))
     {
-    	processInput(window, camera);
-
     	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    	float currentFrame = static_cast<float>(glfwGetTime());
+    	deltaTime = currentFrame - lastFrame;
+    	lastFrame = currentFrame;
+
+    	processInput(window, camera, deltaTime);
+
+
+    	glm::mat4 model = glm::mat4(1.0f);
+    	glm::mat4 view = camera.GetViewMatrix();
+    	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 10000.0f);
+
+    	objectShader.use();
+    	objectShader.setMat4("model", model);
+    	objectShader.setMat4("view", view);
+    	objectShader.setMat4("projection", projection);
+    	objectShader.setVec3("baseColor", 0.7f, 0.7f, 0.7f);
+
+    	camera.UpdatePosition();
+
+    	planet.render(objectShader);
+
 
     	glfwSwapBuffers(window);
     	glfwPollEvents();
     }
+
+    planet.destroy();
 
     glfwTerminate();
     return 0;

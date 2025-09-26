@@ -12,8 +12,6 @@ extern bool cameraLockedOnObject;
 extern double mouseX, mouseY;
 extern Planet* hoveredPlanet;
 
-extern float deltaTime;
-extern float lastFrame;
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window, Camera camera);
+void processInput(GLFWwindow *window, Camera& camera, float deltaTime);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
