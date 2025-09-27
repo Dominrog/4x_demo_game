@@ -12,6 +12,7 @@
 #include "planet.h"
 #include "star.h"
 #include "settings.h"
+#include "selectionring.h"
 
 
 float deltaTime = 0.0f;
@@ -56,10 +57,20 @@ int main()
 
 
     Shader objectShader("../shaders/objectShader.vs", "../shaders/objectShader.fs");
+    Shader ringShader("../shaders/ringShader.vs", "../shaders/ringShader.fs");
 
     initBlockRegistry();
 
     camera.UpdatePosition();
+
+    Planet planet(0.0f, 0.0f, 0.0f, 32, 0.025f, 0.0f, 5.5f);
+    planet.fillPlanet();
+    planet.checkNeighbors();
+    planet.buildMesh(cubeVertices, cubeIndices);
+    planet.upload();
+
+    SelectionRing selection;
+    selection.initSelectionRing();
 
 
     while (!glfwWindowShouldClose(window))
@@ -86,6 +97,18 @@ int main()
 
     	camera.UpdatePosition();
 
+    	Ray mouseRay = getMouseRay(window, camera, projection, view);
+    	hoveredPlanet = nullptr;
+    	glm::vec3 boxMin = planet.getAABBMin();
+    	glm::vec3 boxMax = planet.getAABBMax();
+
+    	if (rayIntersectsAABB(mouseRay, boxMin, boxMax))
+    	{
+    		hoveredPlanet = &planet;
+    	}
+
+    	planet.render(objectShader);
+    	selection.renderSelectionRing(ringShader, camera, model, view, projection);
 
 
     	glfwSwapBuffers(window);
@@ -93,6 +116,7 @@ int main()
     }
 
     planet.destroy();
+    selection.destroy();
 
     glfwTerminate();
     return 0;

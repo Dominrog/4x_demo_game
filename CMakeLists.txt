@@ -13,6 +13,7 @@ set(SRC_FILES
 	src/planet.cpp
 	src/shader.cpp
 	src/star.cpp
+	src/selectionring.cpp
 )
 
 file(GLOB HEADER_FILES
